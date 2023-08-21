@@ -90,13 +90,6 @@ class MainWindow(qtw.QMainWindow):
         # call the base implementation, do *not* use super()!
         qtw.QTableWidget.keyPressEvent(self.table, event)
         if event.key() in (qtc.Qt.Key_Return, qtc.Qt.Key_Enter):
-            current = self.table.currentIndex()
-            nextIndex = current.sibling(current.row() + 1, current.column())
-            if nextIndex.isValid():
-                self.table.setCurrentIndex(nextIndex)
-                self.table.edit(nextIndex)
-
-
             self.update_all()
 
 
@@ -173,7 +166,7 @@ class MainWindow(qtw.QMainWindow):
             amp = float(self.data["Amplitude"][idx])
             phase = np.deg2rad(self.data["Phase"][idx])
 
-            sig = amp * np.sin(2 * np.pi * freq * time + phase)
+            sig = amp * np.real(np.exp(2j * np.pi * freq * time + phase))
             self.canvas_timedomain.axes.plot(time, sig, color=self.colors[idx], linewidth=2, label=f"F={freq}Hz")
             signal += sig
 
@@ -193,7 +186,10 @@ class MainWindow(qtw.QMainWindow):
 
         self.canvas_frequencydomain.axes.cla()  # Clear the canvas.
         self.canvas_frequencydomain.axes.plot(freq, np.abs(X), 'r')
-        self.canvas_frequencydomain.axes.plot(self.data["Frequency"], self.data["Amplitude"], linestyle="None", marker='x')
+
+        for idx, freq in enumerate(self.data["Frequency"]):
+            self.canvas_frequencydomain.axes.plot(freq, self.data["Amplitude"][idx], color=self.colors[idx], linestyle="None", marker='x')
+
         self.canvas_frequencydomain.axes.set_xlim(0, max(self.data["Frequency"]) * 1.5)
         self.canvas_frequencydomain.axes.set_ylim(0, max(self.data["Amplitude"]) * 1.1)
         self.canvas_frequencydomain.draw()
@@ -210,7 +206,7 @@ class MainWindow(qtw.QMainWindow):
         ### From Timedomain
         radius = np.abs(self.X)
         angle = np.angle(self.X)
-        self.ax_polar.plot(angle, radius, color='red', linestyle="None", marker='o')
+        self.ax_polar.plot(angle, radius, color='red', linestyle="None", marker='o', markersize=3)
 
         self.canvas_polar.draw()
 
@@ -220,7 +216,6 @@ class MainWindow(qtw.QMainWindow):
         phases = []
 
         rows = self.table.rowCount()
-        cols = self.table.columnCount()
         for row in range(rows):
             frequencies.append(float(self.table.item(row, 0).text()))
             amplitudes.append(float(self.table.item(row, 1).text()))
