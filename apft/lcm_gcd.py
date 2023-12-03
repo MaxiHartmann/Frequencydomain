@@ -33,6 +33,7 @@ def gcd_of_list(x):
 
 A = np.array([1, 2, 1.5, 10])
 A = np.array([913.585, 20000/60 * 16])
+A = np.array([56, 16, 29])
 
 print(f"   A = {A}")
 print(f" lcm = {lcm_of_list(A):.8e}")
